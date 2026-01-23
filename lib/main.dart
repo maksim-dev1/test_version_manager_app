@@ -35,24 +35,25 @@ class AppDeviceInfo {
   AppDeviceInfo(this.packageInfo, this.deviceInfo);
 }
 
-Future<AppDeviceInfo> _loadInfo() async {
-  final packageInfo = await PackageInfo.fromPlatform();
-  final deviceInfoPlugin = DeviceInfoPlugin();
-
-  dynamic deviceInfo;
-  if (Platform.isAndroid) {
-    deviceInfo = await deviceInfoPlugin.androidInfo;
-  } else if (Platform.isIOS) {
-    deviceInfo = await deviceInfoPlugin.iosInfo;
-  } else {
-    deviceInfo = null;
-  }
-
-  return AppDeviceInfo(packageInfo, deviceInfo);
-}
 
 class _MyHomePageState extends State<MyHomePage> {
   Future<AppDeviceInfo>? _allInfo;
+
+  Future<AppDeviceInfo> _loadInfo() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    final deviceInfoPlugin = DeviceInfoPlugin();
+
+    dynamic deviceInfo;
+    if (Platform.isAndroid) {
+      deviceInfo = await deviceInfoPlugin.androidInfo;
+    } else if (Platform.isIOS) {
+      deviceInfo = await deviceInfoPlugin.iosInfo;
+    } else {
+      deviceInfo = null;
+    }
+
+    return AppDeviceInfo(packageInfo, deviceInfo);
+  }
 
   @override
   void initState() {
