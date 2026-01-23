@@ -98,13 +98,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     final info = snapshot.data!;
                     return Column(
                       children: [
-                        Text(
-                          'Название приложения: ${info.packageInfo.appName}',
-                        ),
-                        Text('Namespace: ${info.packageInfo.packageName}'),
-                        Text('Версия приложения: ${info.packageInfo.version}'),
+                        AppInfoWidget(packageInfo: info.packageInfo),
                         SizedBox(height: 10),
-                        DeviceInfoWidget(deviceInfo: info.deviceInfo)
+                        DeviceInfoWidget(deviceInfo: info.deviceInfo),
                       ],
                     );
                   },
@@ -122,25 +118,42 @@ class DeviceInfoWidget extends StatelessWidget {
   const DeviceInfoWidget({super.key, required this.deviceInfo});
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     if (deviceInfo is AndroidDeviceInfo) {
-    return Column(
-      children: [
-        Text('Устройство: ${deviceInfo.model}'),
-        Text('Android: ${deviceInfo.version.release}'),
-        Text('Бренд: ${deviceInfo.brand}'),
-      ],
-    );
-  } else if (deviceInfo is IosDeviceInfo) {
-    return Column(
-      children: [
-        Text('Устройство: ${deviceInfo.model}'),
-        Text('iOS: ${deviceInfo.systemVersion}'),
-        Text('Имя: ${deviceInfo.name}'),
-      ],
-    );
-  } else {
-    return Text('Неизвестная платформа');
+      return Column(
+        children: [
+          Text('Устройство: ${deviceInfo.model}'),
+          Text('Android: ${deviceInfo.version.release}'),
+          Text('Бренд: ${deviceInfo.brand}'),
+        ],
+      );
+    } else if (deviceInfo is IosDeviceInfo) {
+      return Column(
+        children: [
+          Text('Устройство: ${deviceInfo.model}'),
+          Text('iOS: ${deviceInfo.systemVersion}'),
+          Text('Имя: ${deviceInfo.name}'),
+        ],
+      );
+    } else {
+      return Text('Неизвестная платформа');
+    }
   }
+}
+
+class AppInfoWidget extends StatelessWidget {
+  final PackageInfo packageInfo;
+
+  const AppInfoWidget({super.key, required this.packageInfo});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text('Название приложения: ${packageInfo.appName}'),
+        Text('Namespace: ${packageInfo.packageName}'),
+        Text('Версия приложения: ${packageInfo.version}'),
+      ],
+    );
   }
 }
