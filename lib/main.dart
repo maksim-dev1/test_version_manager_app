@@ -35,7 +35,6 @@ class AppDeviceInfo {
   AppDeviceInfo(this.packageInfo, this.deviceInfo);
 }
 
-
 class _MyHomePageState extends State<MyHomePage> {
   Future<AppDeviceInfo>? _allInfo;
 
@@ -105,7 +104,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         Text('Namespace: ${info.packageInfo.packageName}'),
                         Text('Версия приложения: ${info.packageInfo.version}'),
                         SizedBox(height: 10),
-                        _buildDeviceInfo(info.deviceInfo),
+                        DeviceInfoWidget(deviceInfo: info.deviceInfo)
                       ],
                     );
                   },
@@ -117,8 +116,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-Widget _buildDeviceInfo(dynamic deviceInfo) {
-  if (deviceInfo is AndroidDeviceInfo) {
+class DeviceInfoWidget extends StatelessWidget {
+  final dynamic deviceInfo;
+
+  const DeviceInfoWidget({super.key, required this.deviceInfo});
+
+  @override
+  Widget build(BuildContext context){
+    if (deviceInfo is AndroidDeviceInfo) {
     return Column(
       children: [
         Text('Устройство: ${deviceInfo.model}'),
@@ -136,5 +141,6 @@ Widget _buildDeviceInfo(dynamic deviceInfo) {
     );
   } else {
     return Text('Неизвестная платформа');
+  }
   }
 }
