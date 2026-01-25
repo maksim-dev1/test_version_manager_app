@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:io';
+import 'check_version_app_service.dart';
+import 'version_blocked_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,8 +17,81 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+      ),
+      home: const VersionCheckWrapper(),
+    );
+  }
+}
+
+/// Обертка для проверки версии приложения при запуске
+class VersionCheckWrapper extends StatefulWidget {
+  const VersionCheckWrapper({super.key});
+
+  @override
+  State<VersionCheckWrapper> createState() => _VersionCheckWrapperState();
+}
+
+class _VersionCheckWrapperState extends State<VersionCheckWrapper> {
+  late Future<VersionCheckResult> _versionCheck;
+
+  // TODO: Замените на URL вашего Serverpod сервера
+  final versionService = CheckVersionAppService(
+    baseUrl:
+        'http://localhost:8080', // Для эмулятора Android используйте http://10.0.2.2:8080
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _versionCheck = versionService.checkVersion();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<VersionCheckResult>(
+      future: _versionCheck,
+      builder: (context, snapshot) {
+        // Показываем загрузку
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Проверка версии приложения...'),
+                ],
+              ),
+            ),
+          );
+        }
+
+        // Показываем ошибку (но разрешаем продолжить)
+        if (snapshot.hasError) {
+          return const MyHomePage(title: 'Flutter Demo Home Page');
+        }
+
+        final result = snapshot.data;
+
+        // Если версия заблокирована - показываем экран блокировки
+        if (result != null && result.isBlocked) {
+          return VersionBlockedScreen(
+            currentVersion: result.currentVersion,
+            currentBuildNumber: result.currentBuildNumber,
+            latestVersion: result.latestVersion,
+            latestBuildNumber: result.latestBuildNumber,
+            blockReason: result.blockReason,
+            changelog: result.changelog,
+            forceUpdate: result.forceUpdate,
+          );
+        }
+
+        // Версия разрешена - показываем основное приложение
+        return const MyHomePage(title: 'Flutter Demo Home Page');
+      },
     );
   }
 }
@@ -120,6 +195,7 @@ class DeviceInfoWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (deviceInfo is AndroidDeviceInfo) {
+      print(deviceInfo);
       return Column(
         children: [
           Text('Устройство: ${deviceInfo.model}'),
@@ -148,11 +224,12 @@ class AppInfoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print(packageInfo);
     return Column(
       children: [
         Text('Название приложения: ${packageInfo.appName}'),
         Text('Namespace: ${packageInfo.packageName}'),
-        Text('Версия приложения: ${packageInfo.version}'),
+        Text('Версия приложения: ${packageInfo.version}+${packageInfo.buildNumber}'),
       ],
     );
   }
